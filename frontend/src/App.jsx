@@ -29,8 +29,10 @@ import {
   FormGroup,
   FormControlLabel,
   Checkbox,
-  CircularProgress
+  CircularProgress,
+  Tooltip
 } from '@mui/material';
+import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 
 
 const steps = ['Basic Info', 'Contact Details', 'Business Details', 'Upload Documents', 'Review'];
@@ -75,6 +77,7 @@ export default function AddRestaurant() {
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submissionData, setSubmissionData] = useState(null);
+  const [copySuccess, setCopySuccess] = useState('');
 
   const handleInputChange = (field) => (event) => {
     setFormData(prev => ({
@@ -235,6 +238,16 @@ export default function AddRestaurant() {
   };
 
   const progressPercentage = ((activeStep + 1) / steps.length) * 100;
+
+  const handleCopy = async (text, type) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopySuccess(type);
+      setTimeout(() => setCopySuccess(''), 2000);
+    } catch (err) {
+      console.error('Failed to copy: ', err);
+    }
+  };
 
   const renderStepContent = (step) => {
     switch (step) {
@@ -988,12 +1001,34 @@ export default function AddRestaurant() {
                       Restaurant Panel Access Credentials
                     </Typography>
                     <Box sx={{ bgcolor: "white", p: 1.5, borderRadius: 1, mb: 1.5 }}>
-                      <Typography variant="body2" sx={{ color: "black", mb: 0.5 }}>
-                        <strong>Email:</strong> {submissionData.email || formData.email}
-                      </Typography>
-                      <Typography variant="body2" sx={{ color: "black" }}>
-                        <strong>Password:</strong> {submissionData.credentials.password}
-                      </Typography>
+                      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 0.5 }}>
+                        <Typography variant="body2" sx={{ color: "black" }}>
+                          <strong>Email:</strong> {submissionData.email || formData.email}
+                        </Typography>
+                        <Tooltip title={copySuccess === 'email' ? 'Copied!' : 'Copy email'}>
+                          <IconButton
+                            size="small"
+                            onClick={() => handleCopy(submissionData.email || formData.email, 'email')}
+                            sx={{ color: copySuccess === 'email' ? '#4caf50' : '#666' }}
+                          >
+                            <ContentCopyIcon fontSize="small" />
+                          </IconButton>
+                        </Tooltip>
+                      </Box>
+                      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                        <Typography variant="body2" sx={{ color: "black" }}>
+                          <strong>Password:</strong> {submissionData.credentials.password}
+                        </Typography>
+                        <Tooltip title={copySuccess === 'password' ? 'Copied!' : 'Copy password'}>
+                          <IconButton
+                            size="small"
+                            onClick={() => handleCopy(submissionData.credentials.password, 'password')}
+                            sx={{ color: copySuccess === 'password' ? '#4caf50' : '#666' }}
+                          >
+                            <ContentCopyIcon fontSize="small" />
+                          </IconButton>
+                        </Tooltip>
+                      </Box>
                     </Box>
 
                     <Button
@@ -1070,7 +1105,6 @@ export default function AddRestaurant() {
       <Container maxWidth="md" sx={{ px: { xs: 2, sm: 3 } }}>
         {/* Header Section */}
         <Box sx={{ textAlign: 'center', mb: { xs: 4, md: 6 } }}>
-
 
           <Card sx={{
             background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
