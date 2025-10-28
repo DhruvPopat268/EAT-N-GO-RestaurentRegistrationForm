@@ -316,7 +316,7 @@ export default function AddRestaurant() {
                   </Typography>
                   <FormGroup sx={{
                     display: 'grid',
-                    gridTemplateColumns: 'repeat(3, 1fr)',
+                    gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)' },
                     gap: 1,
                     border: errors.cuisineTypes ? '2px solid #f44336' : '1px solid #e0e0e0',
                     borderRadius: 3,
@@ -460,7 +460,7 @@ export default function AddRestaurant() {
                   }}
                 />
 
-                <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 3 }}>
+                <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)' }, gap: 3 }}>
                   <FormControl fullWidth required error={!!errors.city}>
                     <InputLabel sx={{ fontSize: '1.1rem' }}>City</InputLabel>
                     <Select
@@ -832,7 +832,7 @@ export default function AddRestaurant() {
                     </Typography>
                   </Box>
                   <CardContent>
-                    <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 2 }}>
+                    <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)' }, gap: 2 }}>
                       <Box><strong>Name:</strong> {formData.restaurantName}</Box>
                       <Box><strong>Owner:</strong> {formData.ownerName}</Box>
                       <Box><strong>Category:</strong> <Chip label={formData.foodCategory} size="small" /></Box>
@@ -923,7 +923,7 @@ export default function AddRestaurant() {
   };
   if (isSubmitted) {
     return (
-      <Container maxWidth="sm" sx={{ py: 8 }}>
+      <Container maxWidth="sm" sx={{ py: { xs: 4, md: 8 }, px: { xs: 2, sm: 3 } }}>
         <Slide direction="up" in mountOnEnter>
           <Card
             sx={{
@@ -934,40 +934,41 @@ export default function AddRestaurant() {
               boxShadow: "0 20px 40px rgba(0,0,0,0.1)", // Subtle shadow
             }}
           >
-            <CardContent sx={{ p: 4 }}>
+            <CardContent sx={{ p: { xs: 2, sm: 2.5 } }}>
               <Avatar
                 sx={{
-                  width: 100,
-                  height: 100,
+                  width: 60,
+                  height: 60,
                   mx: "auto",
-                  mb: 3,
-                  bgcolor: "white", // Black circle
-                  color: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)", // White icon
+                  mb: 1.5,
+                  bgcolor: "white",
+                  color: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                  fontSize: "28px"
                 }}
               >
                 ⏳
               </Avatar>
 
-              <Typography variant="h3" fontWeight="bold" gutterBottom>
+              <Typography variant="h5" fontWeight="bold" gutterBottom>
                 Application Submitted!
               </Typography>
 
-              <Typography variant="h6" sx={{ opacity: 0.8, mb: 4 }}>
+              <Typography variant="body2" sx={{ opacity: 0.8, mb: 2 }}>
                 Your restaurant registration is under review
               </Typography>
 
               <Card
                 sx={{
                   bgcolor: "#f9f9f9",
-                  mb: 4,
-                  borderRadius: 3,
+                  mb: 2,
+                  borderRadius: 2,
                 }}
               >
-                <CardContent>
-                  <Typography variant="h5" sx={{ color: "black" }}>
+                <CardContent sx={{ p: 2, "&:last-child": { pb: 2 } }}>
+                  <Typography variant="body1" fontWeight="600" sx={{ color: "black" }}>
                     Application ID: REST-{submissionData?._id?.slice(-8) || Date.now().toString().slice(-6)}
                   </Typography>
-                  <Typography variant="body1" sx={{ color: "gray", mt: 1 }}>
+                  <Typography variant="body2" sx={{ color: "gray", mt: 0.5 }}>
                     Review time: 2-3 business days
                   </Typography>
                 </CardContent>
@@ -977,20 +978,20 @@ export default function AddRestaurant() {
                 <Card
                   sx={{
                     bgcolor: "#e8f5e8",
-                    mb: 4,
-                    borderRadius: 3,
+                    mb: 2,
+                    borderRadius: 2,
                     border: "2px solid #4caf50"
                   }}
                 >
-                  <CardContent>
-                    <Typography variant="h6" sx={{ color: "#2e7d32", mb: 2, fontWeight: "bold" }}>
+                  <CardContent sx={{ p: 2, "&:last-child": { pb: 2 } }}>
+                    <Typography variant="body1" sx={{ color: "#2e7d32", mb: 1.5, fontWeight: "bold" }}>
                       Restaurant Panel Access Credentials
                     </Typography>
-                    <Box sx={{ bgcolor: "white", p: 2, borderRadius: 2, mb: 2 }}>
-                      <Typography variant="body1" sx={{ color: "black", mb: 1 }}>
-                        <strong>Email:</strong> {submissionData.credentials.email}
+                    <Box sx={{ bgcolor: "white", p: 1.5, borderRadius: 1, mb: 1.5 }}>
+                      <Typography variant="body2" sx={{ color: "black", mb: 0.5 }}>
+                        <strong>Email:</strong> {submissionData.email || formData.email}
                       </Typography>
-                      <Typography variant="body1" sx={{ color: "black" }}>
+                      <Typography variant="body2" sx={{ color: "black" }}>
                         <strong>Password:</strong> {submissionData.credentials.password}
                       </Typography>
                     </Box>
@@ -999,10 +1000,12 @@ export default function AddRestaurant() {
                       variant="contained"
                       href="https://eat-n-go-restaurent.vercel.app/"
                       target="_blank"
+                      size="small"
                       sx={{
                         bgcolor: "#4caf50",
                         "&:hover": { bgcolor: "#45a049" },
-                        borderRadius: 2
+                        borderRadius: 1.5,
+                        textTransform: "none"
                       }}
                     >
                       Access Restaurant Panel
@@ -1011,11 +1014,11 @@ export default function AddRestaurant() {
                 </Card>
               )}
 
-
-              <Stack direction="row" spacing={2} justifyContent="center" sx={{ mb: 4 }}>
+              <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5} justifyContent="center" sx={{ mb: 2 }}>
                 <Chip
                   icon={<span>•</span>}
                   label="Submitted"
+                  size="small"
                   sx={{
                     bgcolor: "rgba(0,0,0,0.05)",
                     color: "black",
@@ -1025,6 +1028,7 @@ export default function AddRestaurant() {
                 <Chip
                   icon={<span>•</span>}
                   label="Under Review"
+                  size="small"
                   sx={{
                     bgcolor: "rgba(0,0,0,0.05)",
                     color: "black",
@@ -1036,13 +1040,15 @@ export default function AddRestaurant() {
               <Button
                 variant="contained"
                 onClick={() => window.location.reload()}
+                size="small"
                 sx={{
                   bgcolor: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
                   color: "white",
                   "&:hover": { bgcolor: "#333" },
-                  borderRadius: 3,
-                  px: 4,
-                  py: 1.5,
+                  borderRadius: 2,
+                  px: 3,
+                  py: 1,
+                  textTransform: "none"
                 }}
               >
                 Submit Another Application
@@ -1059,18 +1065,18 @@ export default function AddRestaurant() {
     <Box sx={{
       minHeight: '100vh',
       background: 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)',
-      py: 4
+      py: { xs: 2, md: 4 }
     }}>
-      <Container maxWidth="md">
+      <Container maxWidth="md" sx={{ px: { xs: 2, sm: 3 } }}>
         {/* Header Section */}
-        <Box sx={{ textAlign: 'center', mb: 6 }}>
+        <Box sx={{ textAlign: 'center', mb: { xs: 4, md: 6 } }}>
 
 
-          <Typography variant="h2" fontWeight="bold" color="text.primary" gutterBottom>
+          <Typography variant={{ xs: 'h4', sm: 'h3', md: 'h2' }} fontWeight="bold" color="text.primary" gutterBottom>
             Restaurant Registration
           </Typography>
 
-          <Typography variant="h6" color="text.secondary" sx={{ mb: 4 }}>
+          <Typography variant={{ xs: 'body1', sm: 'h6' }} color="text.secondary" sx={{ mb: 4 }}>
             Join our platform and start serving customers today
           </Typography>
 
@@ -1082,8 +1088,8 @@ export default function AddRestaurant() {
             backdropFilter: 'blur(10px)',
             boxShadow: '0 8px 32px rgba(0,0,0,0.1)'
           }}>
-            <CardContent sx={{ p: 4 }}>
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+            <CardContent sx={{ p: { xs: 2, sm: 3, md: 4 } }}>
+              <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, justifyContent: 'space-between', alignItems: { xs: 'flex-start', sm: 'center' }, gap: { xs: 1, sm: 0 }, mb: 2 }}>
                 <Typography variant="h6" fontWeight="bold">
                   Step {activeStep + 1} of {steps.length}
                 </Typography>
@@ -1105,7 +1111,7 @@ export default function AddRestaurant() {
                 }}
               />
 
-              <Stepper activeStep={activeStep} alternativeLabel>
+              <Stepper activeStep={activeStep} alternativeLabel orientation={{ xs: 'vertical', sm: 'horizontal' }} sx={{ display: { xs: 'none', sm: 'flex' } }}>
                 {steps.map((label, index) => (
                   <Step key={label}>
                     <StepLabel
@@ -1129,6 +1135,13 @@ export default function AddRestaurant() {
                   </Step>
                 ))}
               </Stepper>
+              
+              {/* Mobile Step Indicator */}
+              <Box sx={{ display: { xs: 'block', sm: 'none' }, textAlign: 'center' }}>
+                <Typography variant="body2" color="text.secondary">
+                  {steps[activeStep]}
+                </Typography>
+              </Box>
             </CardContent>
           </Card>
         </Box>
@@ -1141,32 +1154,35 @@ export default function AddRestaurant() {
           boxShadow: '0 20px 40px rgba(0,0,0,0.1)',
           border: '1px solid rgba(255,255,255,0.2)'
         }}>
-          <CardContent sx={{ p: { xs: 3, md: 6 } }}>
-            <Box sx={{ maxWidth: 600, mx: 'auto' }}>
+          <CardContent sx={{ p: { xs: 2, sm: 3, md: 6 } }}>
+            <Box sx={{ maxWidth: { xs: '100%', md: 600 }, mx: 'auto' }}>
               {renderStepContent(activeStep)}
             </Box>
 
-            <Divider sx={{ my: 6 }} />
+            <Divider sx={{ my: { xs: 3, md: 6 } }} />
 
             {/* Navigation Buttons */}
             <Box sx={{
               display: 'flex',
+              flexDirection: { xs: 'column', sm: 'row' },
               justifyContent: 'space-between',
               alignItems: 'center',
-              maxWidth: 600,
+              gap: { xs: 2, sm: 0 },
+              maxWidth: { xs: '100%', md: 600 },
               mx: 'auto'
             }}>
               <Button
                 disabled={activeStep === 0}
                 onClick={handleBack}
                 variant="outlined"
-                size="large"
+                size={{ xs: 'medium', sm: 'large' }}
                 startIcon={null}
                 sx={{
                   borderRadius: 3,
-                  px: 4,
+                  px: { xs: 3, sm: 4 },
                   py: 1.5,
-                  minWidth: 140,
+                  minWidth: { xs: '100%', sm: 140 },
+                  order: { xs: 2, sm: 1 },
                   '&:disabled': {
                     opacity: 0.3
                   }
@@ -1180,13 +1196,14 @@ export default function AddRestaurant() {
                   variant="contained"
                   onClick={handleSubmit}
                   disabled={isSubmitting}
-                  size="large"
+                  size={{ xs: 'medium', sm: 'large' }}
                   startIcon={null}
                   sx={{
                     borderRadius: 3,
-                    px: 4,
+                    px: { xs: 3, sm: 4 },
                     py: 1.5,
-                    minWidth: 180,
+                    minWidth: { xs: '100%', sm: 180 },
+                    order: { xs: 1, sm: 2 },
                     background: isSubmitting
                       ? 'linear-gradient(135deg, #9e9e9e 0%, #757575 100%)'
                       : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
@@ -1229,13 +1246,14 @@ export default function AddRestaurant() {
                 <Button
                   variant="contained"
                   onClick={handleNext}
-                  size="large"
+                  size={{ xs: 'medium', sm: 'large' }}
                   endIcon={null}
                   sx={{
                     borderRadius: 3,
-                    px: 4,
+                    px: { xs: 3, sm: 4 },
                     py: 1.5,
-                    minWidth: 140,
+                    minWidth: { xs: '100%', sm: 140 },
+                    order: { xs: 1, sm: 2 },
                     background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
                     '&:hover': {
                       background: 'linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%)',
@@ -1253,7 +1271,7 @@ export default function AddRestaurant() {
         </Card>
 
         {/* Footer */}
-        <Box sx={{ textAlign: 'center', mt: 4 }}>
+        <Box sx={{ textAlign: 'center', mt: { xs: 3, md: 4 }, px: { xs: 2, sm: 0 } }}>
           <Typography variant="body2" color="text.secondary">
             Need help? Contact our support team at support@eatngo.com
           </Typography>
