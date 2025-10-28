@@ -32,7 +32,6 @@ import {
   CircularProgress,
   Tooltip
 } from '@mui/material';
-import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 
 
 const steps = ['Basic Info', 'Contact Details', 'Business Details', 'Upload Documents', 'Review'];
@@ -77,7 +76,17 @@ export default function AddRestaurant() {
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submissionData, setSubmissionData] = useState(null);
-  const [copySuccess, setCopySuccess] = useState('');
+  const [copiedField, setCopiedField] = useState(null);
+
+  const handleCopy = async (text, field) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopiedField(field);
+      setTimeout(() => setCopiedField(null), 2000);
+    } catch (err) {
+      console.error('Failed to copy: ', err);
+    }
+  };
 
   const handleInputChange = (field) => (event) => {
     setFormData(prev => ({
@@ -197,20 +206,38 @@ export default function AddRestaurant() {
   const handleSubmit = async () => {
     setIsSubmitting(true);
     try {
-      // Mock data for demo when backend is not available
-      const mockData = {
-        _id: Date.now().toString(),
-        email: formData.email,
-        credentials: {
-          password: 'temp' + Math.random().toString(36).substr(2, 8)
+      const formDataToSend = new FormData();
+
+      // Add form data as JSON string
+      const { documents, restaurantImages, ...otherData } = formData;
+      formDataToSend.append('data', JSON.stringify(otherData));
+
+      // Add document files
+      Object.entries(documents).forEach(([key, file]) => {
+        if (file) {
+          formDataToSend.append(key, file);
         }
-      };
-      
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      setSubmissionData(mockData);
-      setIsSubmitted(true);
+      });
+
+      // Add restaurant images
+      restaurantImages.forEach((file, index) => {
+        formDataToSend.append('restaurantImages', file);
+      });
+
+      const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/restaurants`, {
+        method: 'POST',
+        body: formDataToSend
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+
+        setSubmissionData(result.data);
+        setIsSubmitted(true);
+      } else {
+        alert(result.message || 'Error submitting form');
+      }
     } catch (error) {
       console.error('Error:', error);
       alert('Error submitting form');
@@ -220,16 +247,6 @@ export default function AddRestaurant() {
   };
 
   const progressPercentage = ((activeStep + 1) / steps.length) * 100;
-
-  const handleCopy = async (text, type) => {
-    try {
-      await navigator.clipboard.writeText(text);
-      setCopySuccess(type);
-      setTimeout(() => setCopySuccess(''), 2000);
-    } catch (err) {
-      console.error('Failed to copy: ', err);
-    }
-  };
 
   const renderStepContent = (step) => {
     switch (step) {
@@ -987,13 +1004,16 @@ export default function AddRestaurant() {
                         <Typography variant="body2" sx={{ color: "black" }}>
                           <strong>Email:</strong> {submissionData.email || formData.email}
                         </Typography>
-                        <Tooltip title={copySuccess === 'email' ? 'Copied!' : 'Copy email'}>
+                        <Tooltip title={copiedField === 'email' ? 'Copied!' : 'Copy email'}>
                           <IconButton
                             size="small"
                             onClick={() => handleCopy(submissionData.email || formData.email, 'email')}
-                            sx={{ color: copySuccess === 'email' ? '#4caf50' : '#666' }}
+                            sx={{ 
+                              color: copiedField === 'email' ? '#4caf50' : '#666',
+                              '&:hover': { bgcolor: 'rgba(0,0,0,0.04)' }
+                            }}
                           >
-                            <ContentCopyIcon fontSize="small" />
+                            {copiedField === 'email' ? '✓' : '📋'}
                           </IconButton>
                         </Tooltip>
                       </Box>
@@ -1001,13 +1021,16 @@ export default function AddRestaurant() {
                         <Typography variant="body2" sx={{ color: "black" }}>
                           <strong>Password:</strong> {submissionData.credentials.password}
                         </Typography>
-                        <Tooltip title={copySuccess === 'password' ? 'Copied!' : 'Copy password'}>
+                        <Tooltip title={copiedField === 'password' ? 'Copied!' : 'Copy password'}>
                           <IconButton
                             size="small"
                             onClick={() => handleCopy(submissionData.credentials.password, 'password')}
-                            sx={{ color: copySuccess === 'password' ? '#4caf50' : '#666' }}
+                            sx={{ 
+                              color: copiedField === 'password' ? '#4caf50' : '#666',
+                              '&:hover': { bgcolor: 'rgba(0,0,0,0.04)' }
+                            }}
                           >
-                            <ContentCopyIcon fontSize="small" />
+                            {copiedField === 'password' ? '✓' : '📋'}
                           </IconButton>
                         </Tooltip>
                       </Box>
@@ -1087,6 +1110,7 @@ export default function AddRestaurant() {
       <Container maxWidth="md" sx={{ px: { xs: 2, sm: 3 } }}>
         {/* Header Section */}
         <Box sx={{ textAlign: 'center', mb: { xs: 4, md: 6 } }}>
+
 
           <Card sx={{
             background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
