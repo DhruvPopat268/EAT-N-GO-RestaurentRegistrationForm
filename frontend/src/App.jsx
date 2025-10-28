@@ -29,8 +29,7 @@ import {
   FormGroup,
   FormControlLabel,
   Checkbox,
-  CircularProgress,
-  Tooltip
+  CircularProgress
 } from '@mui/material';
 
 
@@ -76,17 +75,7 @@ export default function AddRestaurant() {
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submissionData, setSubmissionData] = useState(null);
-  const [copiedField, setCopiedField] = useState(null);
-
-  const handleCopy = async (text, field) => {
-    try {
-      await navigator.clipboard.writeText(text);
-      setCopiedField(field);
-      setTimeout(() => setCopiedField(null), 2000);
-    } catch (err) {
-      console.error('Failed to copy: ', err);
-    }
-  };
+  const [copySuccess, setCopySuccess] = useState('');
 
   const handleInputChange = (field) => (event) => {
     setFormData(prev => ({
@@ -247,6 +236,16 @@ export default function AddRestaurant() {
   };
 
   const progressPercentage = ((activeStep + 1) / steps.length) * 100;
+
+  const copyToClipboard = async (text, type) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopySuccess(type);
+      setTimeout(() => setCopySuccess(''), 2000);
+    } catch (err) {
+      console.error('Failed to copy: ', err);
+    }
+  };
 
   const renderStepContent = (step) => {
     switch (step) {
@@ -986,7 +985,7 @@ export default function AddRestaurant() {
                 </CardContent>
               </Card>
 
-              {submissionData?.credentials && (
+              {submissionData?.contactDetails?.email && submissionData?.tempPassword && (
                 <Card
                   sx={{
                     bgcolor: "#e8f5e8",
@@ -1002,37 +1001,37 @@ export default function AddRestaurant() {
                     <Box sx={{ bgcolor: "white", p: 1.5, borderRadius: 1, mb: 1.5 }}>
                       <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 0.5 }}>
                         <Typography variant="body2" sx={{ color: "black" }}>
-                          <strong>Email:</strong> {submissionData.email || formData.email}
+                          <strong>Email:</strong> {submissionData?.contactDetails?.email || formData.email}
                         </Typography>
-                        <Tooltip title={copiedField === 'email' ? 'Copied!' : 'Copy email'}>
-                          <IconButton
-                            size="small"
-                            onClick={() => handleCopy(submissionData.email || formData.email, 'email')}
-                            sx={{ 
-                              color: copiedField === 'email' ? '#4caf50' : '#666',
-                              '&:hover': { bgcolor: 'rgba(0,0,0,0.04)' }
-                            }}
-                          >
-                            {copiedField === 'email' ? '✓' : '📋'}
-                          </IconButton>
-                        </Tooltip>
+                        <Button
+                          size="small"
+                          onClick={() => copyToClipboard(submissionData?.contactDetails?.email || formData.email, 'email')}
+                          sx={{
+                            minWidth: 'auto',
+                            p: 0.5,
+                            color: copySuccess === 'email' ? '#4caf50' : '#666',
+                            '&:hover': { bgcolor: 'rgba(0,0,0,0.04)' }
+                          }}
+                        >
+                          {copySuccess === 'email' ? '✓' : '📋'}
+                        </Button>
                       </Box>
                       <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                         <Typography variant="body2" sx={{ color: "black" }}>
-                          <strong>Password:</strong> {submissionData.credentials.password}
+                          <strong>Password:</strong> {submissionData?.tempPassword}
                         </Typography>
-                        <Tooltip title={copiedField === 'password' ? 'Copied!' : 'Copy password'}>
-                          <IconButton
-                            size="small"
-                            onClick={() => handleCopy(submissionData.credentials.password, 'password')}
-                            sx={{ 
-                              color: copiedField === 'password' ? '#4caf50' : '#666',
-                              '&:hover': { bgcolor: 'rgba(0,0,0,0.04)' }
-                            }}
-                          >
-                            {copiedField === 'password' ? '✓' : '📋'}
-                          </IconButton>
-                        </Tooltip>
+                        <Button
+                          size="small"
+                          onClick={() => copyToClipboard(submissionData?.tempPassword, 'password')}
+                          sx={{
+                            minWidth: 'auto',
+                            p: 0.5,
+                            color: copySuccess === 'password' ? '#4caf50' : '#666',
+                            '&:hover': { bgcolor: 'rgba(0,0,0,0.04)' }
+                          }}
+                        >
+                          {copySuccess === 'password' ? '✓' : '📋'}
+                        </Button>
                       </Box>
                     </Box>
 
@@ -1123,11 +1122,11 @@ export default function AddRestaurant() {
               <Typography variant={{ xs: 'h4', sm: 'h3', md: 'h2' }} fontWeight="bold" gutterBottom>
                 EAT-N-GO Restaurant Registration
               </Typography>
-        
+
             </CardContent>
           </Card>
 
-   
+
 
           {/* Progress Section */}
           <Card sx={{
@@ -1184,7 +1183,7 @@ export default function AddRestaurant() {
                   </Step>
                 ))}
               </Stepper>
-              
+
               {/* Mobile Step Indicator */}
               <Box sx={{ display: { xs: 'block', sm: 'none' }, textAlign: 'center' }}>
                 <Typography variant="body2" color="text.secondary">
@@ -1328,4 +1327,5 @@ export default function AddRestaurant() {
       </Container>
     </Box>
   );
+
 }
