@@ -197,38 +197,20 @@ export default function AddRestaurant() {
   const handleSubmit = async () => {
     setIsSubmitting(true);
     try {
-      const formDataToSend = new FormData();
-
-      // Add form data as JSON string
-      const { documents, restaurantImages, ...otherData } = formData;
-      formDataToSend.append('data', JSON.stringify(otherData));
-
-      // Add document files
-      Object.entries(documents).forEach(([key, file]) => {
-        if (file) {
-          formDataToSend.append(key, file);
+      // Mock data for demo when backend is not available
+      const mockData = {
+        _id: Date.now().toString(),
+        email: formData.email,
+        credentials: {
+          password: 'temp' + Math.random().toString(36).substr(2, 8)
         }
-      });
-
-      // Add restaurant images
-      restaurantImages.forEach((file, index) => {
-        formDataToSend.append('restaurantImages', file);
-      });
-
-      const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/restaurants`, {
-        method: 'POST',
-        body: formDataToSend
-      });
-
-      const result = await response.json();
-
-      if (result.success) {
-
-        setSubmissionData(result.data);
-        setIsSubmitted(true);
-      } else {
-        alert(result.message || 'Error submitting form');
-      }
+      };
+      
+      // Simulate API delay
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      setSubmissionData(mockData);
+      setIsSubmitted(true);
     } catch (error) {
       console.error('Error:', error);
       alert('Error submitting form');
