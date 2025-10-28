@@ -316,7 +316,7 @@ export default function AddRestaurant() {
                   </Typography>
                   <FormGroup sx={{
                     display: 'grid',
-                    gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)' },
+                    gridTemplateColumns: 'repeat(2, 1fr)',
                     gap: 1,
                     border: errors.cuisineTypes ? '2px solid #f44336' : '1px solid #e0e0e0',
                     borderRadius: 3,
@@ -1072,13 +1072,22 @@ export default function AddRestaurant() {
         <Box sx={{ textAlign: 'center', mb: { xs: 4, md: 6 } }}>
 
 
-          <Typography variant={{ xs: 'h4', sm: 'h3', md: 'h2' }} fontWeight="bold" color="text.primary" gutterBottom>
-            Restaurant Registration
-          </Typography>
+          <Card sx={{
+            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+            color: 'white',
+            mb: 4,
+            borderRadius: 4,
+            textAlign: 'center'
+          }}>
+            <CardContent sx={{ py: 2 }}>
+              <Typography variant={{ xs: 'h4', sm: 'h3', md: 'h2' }} fontWeight="bold" gutterBottom>
+                EAT-N-GO Restaurant Registration
+              </Typography>
+        
+            </CardContent>
+          </Card>
 
-          <Typography variant={{ xs: 'body1', sm: 'h6' }} color="text.secondary" sx={{ mb: 4 }}>
-            Join our platform and start serving customers today
-          </Typography>
+   
 
           {/* Progress Section */}
           <Card sx={{
@@ -1111,7 +1120,7 @@ export default function AddRestaurant() {
                 }}
               />
 
-              <Stepper activeStep={activeStep} alternativeLabel orientation={{ xs: 'vertical', sm: 'horizontal' }} sx={{ display: { xs: 'none', sm: 'flex' } }}>
+              <Stepper activeStep={activeStep} alternativeLabel sx={{ display: { xs: 'none', sm: 'flex' } }}>
                 {steps.map((label, index) => (
                   <Step key={label}>
                     <StepLabel
@@ -1175,7 +1184,7 @@ export default function AddRestaurant() {
                 disabled={activeStep === 0}
                 onClick={handleBack}
                 variant="outlined"
-                size={{ xs: 'medium', sm: 'large' }}
+                size="large"
                 startIcon={null}
                 sx={{
                   borderRadius: 3,
@@ -1196,7 +1205,7 @@ export default function AddRestaurant() {
                   variant="contained"
                   onClick={handleSubmit}
                   disabled={isSubmitting}
-                  size={{ xs: 'medium', sm: 'large' }}
+                  size="large"
                   startIcon={null}
                   sx={{
                     borderRadius: 3,
@@ -1246,7 +1255,7 @@ export default function AddRestaurant() {
                 <Button
                   variant="contained"
                   onClick={handleNext}
-                  size={{ xs: 'medium', sm: 'large' }}
+                  size="large"
                   endIcon={null}
                   sx={{
                     borderRadius: 3,
