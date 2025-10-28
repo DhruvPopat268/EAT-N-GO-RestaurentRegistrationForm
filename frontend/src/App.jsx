@@ -985,7 +985,7 @@ export default function AddRestaurant() {
                 </CardContent>
               </Card>
 
-              {submissionData?.contactDetails?.email && submissionData?.tempPassword && (
+              {submissionData?.contactDetails?.email && submissionData?.plainTempPassword && (
                 <Card
                   sx={{
                     bgcolor: "#e8f5e8",
@@ -1018,11 +1018,11 @@ export default function AddRestaurant() {
                       </Box>
                       <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                         <Typography variant="body2" sx={{ color: "black" }}>
-                          <strong>Password:</strong> {submissionData?.tempPassword}
+                          <strong>Password:</strong> {submissionData?.plainTempPassword}
                         </Typography>
                         <Button
                           size="small"
-                          onClick={() => copyToClipboard(submissionData?.tempPassword, 'password')}
+                          onClick={() => copyToClipboard(submissionData?.plainTempPassword, 'password')}
                           sx={{
                             minWidth: 'auto',
                             p: 0.5,
