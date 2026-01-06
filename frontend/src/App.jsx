@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useCallback } from 'react';
 import {
   Box,
   Card,
@@ -31,7 +31,12 @@ import {
   Checkbox,
   CircularProgress
 } from '@mui/material';
+import { GoogleMap, LoadScript, Marker, Autocomplete as GoogleAutocomplete } from '@react-google-maps/api';
 
+
+const libraries = ['places'];
+const mapContainerStyle = { width: '100%', height: '300px' };
+const center = { lat: 23.0225, lng: 72.5714 };
 
 const steps = ['Basic Info', 'Contact Details', 'Business Details', 'Upload Documents', 'Review'];
 
@@ -57,6 +62,8 @@ export default function AddRestaurant() {
     state: '',
     country: '',
     pincode: '',
+    latitude: '',
+    longitude: '',
     licenseNumber: '',
     gstNumber: '',
     bankAccount: '',
@@ -75,7 +82,62 @@ export default function AddRestaurant() {
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submissionData, setSubmissionData] = useState(null);
-  const [copySuccess, setCopySuccess] = useState('');
+  const [mapCenter, setMapCenter] = useState(center);
+  const [markerPosition, setMarkerPosition] = useState(center);
+  const autocompleteRef = useRef(null);
+
+  const onPlaceChanged = () => {
+    if (autocompleteRef.current) {
+      const place = autocompleteRef.current.getPlace();
+      if (place.geometry) {
+        const lat = place.geometry.location.lat();
+        const lng = place.geometry.location.lng();
+        const newPosition = { lat, lng };
+        
+        setMarkerPosition(newPosition);
+        setMapCenter(newPosition);
+        
+        setFormData(prev => ({
+          ...prev,
+          address: place.formatted_address || '',
+          latitude: lat.toString(),
+          longitude: lng.toString(),
+          city: place.address_components?.find(c => c.types.includes('locality'))?.long_name || '',
+          state: place.address_components?.find(c => c.types.includes('administrative_area_level_1'))?.long_name || '',
+          country: place.address_components?.find(c => c.types.includes('country'))?.long_name || '',
+          pincode: place.address_components?.find(c => c.types.includes('postal_code'))?.long_name || ''
+        }));
+      }
+    }
+  };
+
+  const onMarkerDragEnd = useCallback((e) => {
+    const lat = e.latLng.lat();
+    const lng = e.latLng.lng();
+    const newPosition = { lat, lng };
+    
+    setMarkerPosition(newPosition);
+    setFormData(prev => ({
+      ...prev,
+      latitude: lat.toString(),
+      longitude: lng.toString()
+    }));
+    
+    const geocoder = new window.google.maps.Geocoder();
+    geocoder.geocode({ location: newPosition }, (results, status) => {
+      if (status === 'OK' && results[0]) {
+        const place = results[0];
+        setFormData(prev => ({
+          ...prev,
+          address: place.formatted_address,
+          city: place.address_components?.find(c => c.types.includes('locality'))?.long_name || prev.city,
+          state: place.address_components?.find(c => c.types.includes('administrative_area_level_1'))?.long_name || prev.state,
+          country: place.address_components?.find(c => c.types.includes('country'))?.long_name || prev.country,
+          pincode: place.address_components?.find(c => c.types.includes('postal_code'))?.long_name || prev.pincode
+        }));
+      }
+    });
+  }, []);
 
   const handleInputChange = (field) => (event) => {
     setFormData(prev => ({
@@ -413,55 +475,15 @@ export default function AddRestaurant() {
               }}>
               </Card>
 
-              <Stack spacing={4}>
-                <Box sx={{ display: 'flex', gap: 2 }}>
-                  {/* <Email sx={{ color: 'primary.main', mt: 2 }} /> */}
-                  <TextField
-                    fullWidth
-                    label="Email Address"
-                    type="email"
-                    value={formData.email}
-                    onChange={handleInputChange('email')}
-                    error={!!errors.email}
-                    helperText={errors.email}
-                    required
-                    sx={{
-                      '& .MuiOutlinedInput-root': {
-                        borderRadius: 3,
-                        fontSize: '1.1rem'
-                      }
-                    }}
-                  />
-                </Box>
-
-                <Box sx={{ display: 'flex', gap: 2 }}>
-                  {/* <Phone sx={{ color: 'primary.main', mt: 2 }} /> */}
-                  <TextField
-                    fullWidth
-                    label="Phone Number"
-                    value={formData.phone}
-                    onChange={handleInputChange('phone')}
-                    error={!!errors.phone}
-                    helperText={errors.phone}
-                    required
-                    sx={{
-                      '& .MuiOutlinedInput-root': {
-                        borderRadius: 3,
-                        fontSize: '1.1rem'
-                      }
-                    }}
-                  />
-                </Box>
-
+              <Stack spacing={3}>
                 <TextField
                   fullWidth
-                  label="Complete Address"
-                  multiline
-                  rows={3}
-                  value={formData.address}
-                  onChange={handleInputChange('address')}
-                  error={!!errors.address}
-                  helperText={errors.address}
+                  label="Email Address *"
+                  type="email"
+                  value={formData.email}
+                  onChange={handleInputChange('email')}
+                  error={!!errors.email}
+                  helperText={errors.email}
                   required
                   sx={{
                     '& .MuiOutlinedInput-root': {
@@ -471,104 +493,156 @@ export default function AddRestaurant() {
                   }}
                 />
 
-                <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)' }, gap: 3 }}>
-                  <FormControl fullWidth required error={!!errors.city}>
-                    <InputLabel sx={{ fontSize: '1.1rem' }}>City</InputLabel>
-                    <Select
+                <TextField
+                  fullWidth
+                  label="Phone Number *"
+                  value={formData.phone}
+                  onChange={handleInputChange('phone')}
+                  error={!!errors.phone}
+                  helperText={errors.phone}
+                  required
+                  sx={{
+                    '& .MuiOutlinedInput-root': {
+                      borderRadius: 3,
+                      fontSize: '1.1rem'
+                    }
+                  }}
+                />
+
+                <LoadScript googleMapsApiKey={import.meta.env.VITE_GOOGLE_MAPS_API_KEY} libraries={libraries}>
+                  <GoogleAutocomplete
+                    onLoad={(autocomplete) => {
+                      autocompleteRef.current = autocomplete;
+                    }}
+                    onPlaceChanged={onPlaceChanged}
+                  >
+                    <TextField
+                      fullWidth
+                      label="Search Location *"
+                      value={formData.address}
+                      onChange={handleInputChange('address')}
+                      error={!!errors.address}
+                      helperText={errors.address || "Start typing to search for your restaurant location"}
+                      required
+                      placeholder="Start typing to search for your restaurant location"
+                      sx={{
+                        '& .MuiOutlinedInput-root': {
+                          borderRadius: 3,
+                          fontSize: '1.1rem'
+                        }
+                      }}
+                    />
+                  </GoogleAutocomplete>
+
+                  <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 2, mt: 3 }}>
+                    <TextField
+                      fullWidth
+                      label="City *"
                       value={formData.city}
-                      onChange={handleInputChange('city')}
-                      label="City"
+                      error={!!errors.city}
+                      helperText={errors.city}
+                      required
+                      disabled
                       sx={{
-                        borderRadius: 3,
-                        fontSize: '1.1rem',
-                        '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: 'primary.main' },
-                        '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderWidth: 2 }
+                        '& .MuiOutlinedInput-root': {
+                          borderRadius: 3,
+                          fontSize: '1rem'
+                        }
                       }}
-                    >
-                      <MenuItem value="Mumbai">Mumbai</MenuItem>
-                      <MenuItem value="Delhi">Delhi</MenuItem>
-                      <MenuItem value="Bangalore">Bangalore</MenuItem>
-                      <MenuItem value="Chennai">Chennai</MenuItem>
-                      <MenuItem value="Kolkata">Kolkata</MenuItem>
-                      <MenuItem value="Hyderabad">Hyderabad</MenuItem>
-                      <MenuItem value="Pune">Pune</MenuItem>
-                      <MenuItem value="Ahmedabad">Ahmedabad</MenuItem>
-                      <MenuItem value="Jaipur">Jaipur</MenuItem>
-                      <MenuItem value="Surat">Surat</MenuItem>
-                    </Select>
-                    {errors.city && <Typography variant="caption" color="error" sx={{ mt: 0.5, ml: 1.5 }}>{errors.city}</Typography>}
-                  </FormControl>
+                    />
 
-                  <FormControl fullWidth required error={!!errors.state}>
-                    <InputLabel sx={{ fontSize: '1.1rem' }}>State</InputLabel>
-                    <Select
+                    <TextField
+                      fullWidth
+                      label="State *"
                       value={formData.state}
-                      onChange={handleInputChange('state')}
-                      label="State"
+                      error={!!errors.state}
+                      helperText={errors.state}
+                      required
+                      disabled
                       sx={{
-                        borderRadius: 3,
-                        fontSize: '1.1rem',
-                        '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: 'primary.main' },
-                        '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderWidth: 2 }
+                        '& .MuiOutlinedInput-root': {
+                          borderRadius: 3,
+                          fontSize: '1rem'
+                        }
                       }}
-                    >
-                      <MenuItem value="Maharashtra">Maharashtra</MenuItem>
-                      <MenuItem value="Delhi">Delhi</MenuItem>
-                      <MenuItem value="Karnataka">Karnataka</MenuItem>
-                      <MenuItem value="Tamil Nadu">Tamil Nadu</MenuItem>
-                      <MenuItem value="West Bengal">West Bengal</MenuItem>
-                      <MenuItem value="Telangana">Telangana</MenuItem>
-                      <MenuItem value="Gujarat">Gujarat</MenuItem>
-                      <MenuItem value="Rajasthan">Rajasthan</MenuItem>
-                      <MenuItem value="Uttar Pradesh">Uttar Pradesh</MenuItem>
-                      <MenuItem value="Madhya Pradesh">Madhya Pradesh</MenuItem>
-                    </Select>
-                    {errors.state && <Typography variant="caption" color="error" sx={{ mt: 0.5, ml: 1.5 }}>{errors.state}</Typography>}
-                  </FormControl>
+                    />
 
-                  <FormControl fullWidth required error={!!errors.country}>
-                    <InputLabel sx={{ fontSize: '1.1rem' }}>Country</InputLabel>
-                    <Select
+                    <TextField
+                      fullWidth
+                      label="Country *"
                       value={formData.country}
-                      onChange={handleInputChange('country')}
-                      label="Country"
+                      error={!!errors.country}
+                      helperText={errors.country}
+                      required
+                      disabled
                       sx={{
+                        '& .MuiOutlinedInput-root': {
+                          borderRadius: 3,
+                          fontSize: '1rem'
+                        }
+                      }}
+                    />
+                  </Box>
+
+                  <TextField
+                    fullWidth
+                    label="Pincode *"
+                    value={formData.pincode}
+                    error={!!errors.pincode}
+                    helperText={errors.pincode}
+                    required
+                    disabled
+                    sx={{
+                      mt: 2,
+                      '& .MuiOutlinedInput-root': {
                         borderRadius: 3,
-                        fontSize: '1.1rem',
-                        '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: 'primary.main' },
-                        '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderWidth: 2 }
+                        fontSize: '1.1rem'
+                      }
+                    }}
+                  />
+
+                  <Typography variant="h6" sx={{ mt: 3, mb: 2, fontWeight: 600 }}>
+                    Restaurant Location
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                    Click on the map or drag the marker to adjust your exact location
+                  </Typography>
+
+                  <Card sx={{ p: 2, bgcolor: '#f5f5f5', borderRadius: 3 }}>
+                    <GoogleMap
+                      mapContainerStyle={mapContainerStyle}
+                      center={mapCenter}
+                      zoom={15}
+                      options={{
+                        streetViewControl: false,
+                        mapTypeControl: false,
+                        fullscreenControl: false
                       }}
                     >
-                      <MenuItem value="India">India</MenuItem>
-                      <MenuItem value="United States">United States</MenuItem>
-                      <MenuItem value="United Kingdom">United Kingdom</MenuItem>
-                      <MenuItem value="Canada">Canada</MenuItem>
-                      <MenuItem value="Australia">Australia</MenuItem>
-                      <MenuItem value="Germany">Germany</MenuItem>
-                      <MenuItem value="France">France</MenuItem>
-                      <MenuItem value="Japan">Japan</MenuItem>
-                      <MenuItem value="Singapore">Singapore</MenuItem>
-                      <MenuItem value="UAE">UAE</MenuItem>
-                    </Select>
-                    {errors.country && <Typography variant="caption" color="error" sx={{ mt: 0.5, ml: 1.5 }}>{errors.country}</Typography>}
-                  </FormControl>
-                </Box>
-
-                <TextField
-                  fullWidth
-                  label="Pincode"
-                  value={formData.pincode}
-                  onChange={handleInputChange('pincode')}
-                  error={!!errors.pincode}
-                  helperText={errors.pincode}
-                  required
-                  sx={{
-                    '& .MuiOutlinedInput-root': {
-                      borderRadius: 3,
-                      fontSize: '1.1rem'
-                    }
-                  }}
-                />
+                      <Marker
+                        position={markerPosition}
+                        draggable={true}
+                        onDragEnd={onMarkerDragEnd}
+                      />
+                    </GoogleMap>
+                    <Box sx={{ display: 'flex', gap: 2, mt: 2 }}>
+                      <TextField
+                        label="Latitude"
+                        value={formData.latitude}
+                        size="small"
+                        sx={{ flex: 1 }}
+                        InputProps={{ readOnly: true }}
+                      />
+                      <TextField
+                        label="Longitude"
+                        value={formData.longitude}
+                        size="small"
+                        sx={{ flex: 1 }}
+                        InputProps={{ readOnly: true }}
+                      />
+                    </Box>
+                  </Card>
+                </LoadScript>
               </Stack>
             </Box>
           </Fade>
