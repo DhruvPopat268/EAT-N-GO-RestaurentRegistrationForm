@@ -55,6 +55,7 @@ export default function AddRestaurant() {
     foodCategory: 'Veg',
     cuisineTypes: [],
     otherCuisine: '',
+    alcoholAvailable: false,
     email: '',
     phone: '',
     address: '',
@@ -457,6 +458,37 @@ export default function AddRestaurant() {
                       </Box>
                     </Box>
                   )}
+                </FormControl>
+
+                <FormControl component="fieldset">
+                  <Typography variant="h6" sx={{ mb: 2, fontSize: '1.1rem', fontWeight: 600 }}>
+                    Alcohol Availability
+                  </Typography>
+                  <Box sx={{
+                    border: '1px solid #e0e0e0',
+                    borderRadius: 3,
+                    p: 2
+                  }}>
+                    <FormControlLabel
+                      control={
+                        <Checkbox
+                          checked={formData.alcoholAvailable}
+                          onChange={(e) => setFormData(prev => ({ ...prev, alcoholAvailable: e.target.checked }))}
+                          sx={{
+                            '&.Mui-checked': {
+                              color: 'primary.main'
+                            }
+                          }}
+                        />
+                      }
+                      label="Restaurant serves alcohol"
+                      sx={{
+                        '& .MuiFormControlLabel-label': {
+                          fontSize: '0.95rem'
+                        }
+                      }}
+                    />
+                  </Box>
                 </FormControl>
               </Stack>
             </Box>
@@ -922,6 +954,7 @@ export default function AddRestaurant() {
                       <Box><strong>Owner:</strong> {formData.ownerName}</Box>
                       <Box><strong>Category:</strong> <Chip label={formData.foodCategory} size="small" /></Box>
                       <Box><strong>Cuisines:</strong> {formData.cuisineTypes.map(c => c === 'Other' ? formData.otherCuisine : c).filter(Boolean).join(', ')}</Box>
+                      <Box><strong>Alcohol Available:</strong> {formData.alcoholAvailable ? 'Yes' : 'No'}</Box>
                     </Box>
                   </CardContent>
                 </Card>
