@@ -75,7 +75,8 @@ export default function AddRestaurant() {
       gstCertificate: null,
       panCard: null,
       bankStatement: null,
-      foodLicense: null
+      foodLicense: null,
+      licenceForAlchoholSelling: null
     },
     restaurantImages: []
   });
@@ -785,6 +786,7 @@ export default function AddRestaurant() {
           { key: 'panCard', label: 'PAN Card', required: true },
           { key: 'bankStatement', label: 'Bank Statement', required: false },
           { key: 'foodLicense', label: 'Food License (FSSAI)', required: true },
+          ...(formData.alcoholAvailable ? [{ key: 'licenceForAlchoholSelling', label: 'Licence For Alcohol Selling', required: false }] : []),
           { key: 'restaurantImages', label: 'Restaurant Images', required: false, multiple: true }
         ];
 
@@ -1018,7 +1020,8 @@ export default function AddRestaurant() {
                           gstCertificate: 'GST Certificate',
                           panCard: 'PAN Card',
                           bankStatement: 'Bank Statement',
-                          foodLicense: 'Food License'
+                          foodLicense: 'Food License',
+                          licenceForAlchoholSelling: 'Licence For Alcohol Selling'
                         };
                         return file ? (
                           <Box key={key} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
